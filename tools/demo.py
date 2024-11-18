@@ -28,7 +28,7 @@ first = True
 
 def get_frames(video_name):
     if not video_name:
-        cap = cv2.VideoCapture("v4l2src device=/dev/video4 ! video/x-raw,framerate=30/1 ! videoconvert ! appsink", cv2.CAP_GSTREAMER)
+        cap = cv2.VideoCapture("v4l2src device=/dev/video4 ! video/x-raw,width=1280,height=720 ! videoflip method=horizontal-flip ! videoconvert ! appsink", cv2.CAP_GSTREAMER)
         # warmup
         for i in range(5):
             cap.read()
@@ -123,6 +123,10 @@ def main():
             key = cv2.waitKey(30)
             if key == ord("q"):
                 break
+            if key == ord("s"):
+                init_rect = cv2.selectROI(video_name, frame, False, False)
+                tracker.init(frame, init_rect)
+                continue
 
     if video_out is not None:
         video_out.release()

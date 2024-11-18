@@ -292,4 +292,4 @@ __C.TRACK.MASK_THERSHOLD = 0.30
 __C.TRACK.MASK_OUTPUT_SIZE = 127
 
 # alpha factor for simmask_e
-# __C.TRACK.FACTOR = 0.2 #added by bao
+__C.TRACK.FACTOR = 0.2 #added by bao
