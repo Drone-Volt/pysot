@@ -15,7 +15,7 @@ from pysot.core.config import cfg
 from pysot.models.model_builder import ModelBuilder
 from pysot.tracker.tracker_builder import build_tracker
 
-torch.set_num_threads(1)
+torch.set_num_threads(8)
 
 parser = argparse.ArgumentParser(description='tracking demo')
 parser.add_argument('--config', type=str, help='config file')
@@ -24,10 +24,11 @@ parser.add_argument('--video_name', default='', type=str,
                     help='videos or image files')
 args = parser.parse_args()
 
+first = True
 
 def get_frames(video_name):
     if not video_name:
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture("v4l2src device=/dev/video4 ! video/x-raw,framerate=30/1 ! videoconvert ! appsink", cv2.CAP_GSTREAMER)
         # warmup
         for i in range(5):
             cap.read()
@@ -40,6 +41,13 @@ def get_frames(video_name):
     elif video_name.endswith('avi') or \
         video_name.endswith('mp4'):
         cap = cv2.VideoCapture(args.video_name)
+
+        global first
+        if first:
+            first = False
+            for i in range(300):
+                ret, frame = cap.read()
+
         while True:
             ret, frame = cap.read()
             if ret:
@@ -78,6 +86,9 @@ def main():
     else:
         video_name = 'webcam'
     cv2.namedWindow(video_name, cv2.WND_PROP_FULLSCREEN)
+
+    video_out = None
+
     for frame in get_frames(args.video_name):
         if first_frame:
             try:
@@ -102,8 +113,21 @@ def main():
                               (bbox[0]+bbox[2], bbox[1]+bbox[3]),
                               (0, 255, 0), 3)
             cv2.imshow(video_name, frame)
-            cv2.waitKey(40)
 
+            # if video_out is None:
+            #     video_out = cv2.VideoWriter(args.video_name + ".out.mp4", cv2.VideoWriter_fourcc(*'MP4V'), 30.0, (frame.shape[1], frame.shape[0]))
+            
+            if video_out is not None:
+                video_out.write(frame)
+            
+            key = cv2.waitKey(30)
+            if key == ord("q"):
+                break
+
+    if video_out is not None:
+        video_out.release()
+
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
