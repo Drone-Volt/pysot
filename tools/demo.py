@@ -88,6 +88,7 @@ def main():
     cv2.namedWindow(video_name, cv2.WND_PROP_FULLSCREEN)
 
     video_out = None
+    wait_time = 30;
 
     for frame in get_frames(args.video_name):
         if first_frame:
@@ -120,13 +121,22 @@ def main():
             if video_out is not None:
                 video_out.write(frame)
             
-            key = cv2.waitKey(30)
+            key = cv2.waitKey(wait_time)
             if key == ord("q"):
                 break
-            if key == ord("s"):
-                init_rect = cv2.selectROI(video_name, frame, False, False)
-                tracker.init(frame, init_rect)
+            elif key == 13:  # Enter
+                first_frame = True
                 continue
+            elif key == ord(" "):
+                wait_time = -1
+                continue
+            elif key == ord("c"):
+                wait_time = 30
+                continue
+            elif key == -1:  # normally -1 returned,so don't print it
+                continue
+            else:
+                print(key)
 
     if video_out is not None:
         video_out.release()
